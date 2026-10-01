@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 Firmware Flasher</title>
+<style>
+  :root {
+    --bg: #050505;
+    --panel: #0d0a0a;
+    --border: #301c1c;
+    --text: #d8d0d0;
+    --text-dim: #6b5d5d;
+    --accent: #ff2b2b;
+    --accent-dim: #7a1f1f;
+    --warn: #ff5a5a;
+    --err: #ff5a5a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  }
+  #app {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 18px 60px;
+  }
+  h1 {
+    font-size: 17px;
+    color: #f2eaea;
+    letter-spacing: 0.5px;
+    margin: 0 0 4px 0;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .panel h3 {
+    margin: 0 0 10px 0;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .step-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(94,255,143,0.12);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  select, input[type=text], input[type=number] {
+    background: #0a0d0a;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 2px;
+    outline: none;
+  }
+  select:focus, input:focus { border-color: var(--accent-dim); }
+  button {
+    background: rgba(94,255,143,0.1);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 7px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  button:hover:not(:disabled) { background: rgba(94,255,143,0.2); }
+  button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  button.danger {
+    border-color: #ff2b2b;
+    color: #fff;
+    background: rgba(255,43,43,0.25);
+  }
+  .file-row {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .file-row input[type=text] { width: 100%; }
+  .add-row-btn {
+    font-size: 11px;
+    padding: 5px 10px;
+    margin-top: 4px;
+  }
+  .remove-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .quick-fill-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .quick-fill-btn {
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    background: rgba(255,43,43,0.08);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .quick-fill-btn:hover { background: rgba(255,43,43,0.18); }
+  .flash-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .progress-wrap {
+    margin-top: 12px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: #0a0d0a;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.15s ease;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  #log {
+    background: #050505;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px;
+    font-size: 11px;
+    line-height: 1.6;
+    height: 220px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    color: #ae8f8f;
+  }
+  .status-pill {
+    display: inline-block;
+    font-size: 10.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .status-pill.connected { border-color: var(--accent-dim); color: var(--accent); }
+  .note {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .note b { color: var(--warn); }
+  .browser-warn {
+    background: rgba(255,43,43,0.1);
+    border: 1px solid #7a1f1f;
+    color: #ffb0b0;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .offset-preset {
+    font-size: 10.5px;
+    color: var(--text-dim);
+  }
+  .offset-preset button {
+    font-size: 10px;
+    padding: 2px 6px;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>ESP32 <span>::</span> FIRMWARE FLASHER</h1>
+  <div class="subtitle">Flashes compiled .bin firmware to an ESP32 over USB, right from this page (Web Serial API).</div>
+
+  <div class="browser-warn" id="browserWarn">
+    Your browser doesn't support the Web Serial API. This tool needs Chrome, Edge, or another Chromium-based browser (desktop).
+  </div>
+  <div class="browser-warn" id="fileProtocolWarn">
+    This page is open as a local file (<code id="currentProtocol"></code>), and Chrome/Edge block the module script this page needs when opened that way — that's why clicking Connect does nothing. Fix: open a terminal in this file's folder and run <code>python3 -m http.server 8000</code>, then open <code>http://localhost:8000/esp32_flasher.html</code> in your browser instead.
+  </div>
+  <div class="browser-warn" id="libLoadWarn">
+    Couldn't load the flashing library (esptool-js) from unpkg.com. Check your internet connection, or that nothing (an ad blocker, firewall, or corporate proxy) is blocking requests to unpkg.com, then reload this page.
+  </div>
+
+  <div class="panel">
+    <h3>1 · Connect device</h3>
+    <div class="step-row">
+      <button id="connectBtn">SELECT PORT &amp; CONNECT</button>
+      <span class="status-pill" id="statusPill">not connected</span>
+    </div>
+    <div class="note">Plug your ESP32 in via USB, click connect, and pick its serial port from the browser's device list. Put the board in bootloader mode first if it doesn't auto-reset (hold BOOT, tap EN/RESET, release BOOT — varies by board).</div>
+  </div>
+
+  <div class="panel">
+    <h3>2 · Firmware file(s)</h3>
+    <div class="quick-fill-row" id="quickFillRow" style="margin-bottom:10px; display:none;">
+      <span style="font-size:10.5px; color:var(--text-dim);">Quick-fill for <b id="quickFillChip" style="color:var(--accent);">this chip</b>:</span>
+      <button class="quick-fill-btn" data-preset="bootloader">+ bootloader.bin</button>
+      <button class="quick-fill-btn" data-preset="partitions">+ partition-table.bin</button>
+      <button class="quick-fill-btn" data-preset="app">+ app.bin</button>
+      <button class="quick-fill-btn" data-preset="merged">+ merged/full.bin (0x0)</button>
+    </div>
+    <div id="fileRows"></div>
+    <button class="add-row-btn" id="addRowBtn">+ ADD ANOTHER BINARY</button>
+    <div class="note" style="margin-top:10px;">
+      Compile your sketch first (Arduino IDE: Sketch → Export Compiled Binary, or PlatformIO: <code>pio run</code>) to get a <b>.bin</b> file — this page flashes binaries, it doesn't compile source.
+      This page accepts any file, any chip — after connecting, it detects your specific ESP32 variant and the quick-fill buttons above set the correct bootloader offset for that chip (offsets differ between variants). If your IDE exports a merged/full image (bootloader+partitions+app in one file), use address <b>0x0</b> regardless of chip.
+      <span class="offset-preset" id="offsetHint">Connect a device to enable chip-specific quick-fill.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>3 · Flash options</h3>
+    <div class="step-row">
+      <label style="font-size:12px;">Flash mode
+        <select id="flashMode">
+          <option value="dio" selected>dio (default, safest)</option>
+          <option value="qio">qio</option>
+          <option value="dout">dout</option>
+          <option value="qout">qout</option>
+        </select>
+      </label>
+      <label style="font-size:12px;">Flash freq
+        <select id="flashFreq">
+          <option value="40m" selected>40m</option>
+          <option value="80m">80m</option>
+          <option value="26m">26m</option>
+          <option value="20m">20m</option>
+        </select>
+      </label>
+      <label style="font-size:12px;">Flash size
+        <select id="flashSize">
+          <option value="4MB" selected>4MB</option>
+          <option value="2MB">2MB</option>
+          <option value="8MB">8MB</option>
+          <option value="16MB">16MB</option>
+          <option value="1MB">1MB</option>
+        </select>
+      </label>
+    </div>
+    <div class="step-row">
+      <label style="font-size:12px;"><input type="checkbox" id="eraseAllChk"> Erase entire flash first</label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>4 · Flash</h3>
+    <div class="flash-row">
+      <button id="flashBtn" disabled>FLASH FIRMWARE</button>
+      <button id="eraseBtn" class="danger" disabled>ERASE FLASH ONLY</button>
+      <button id="disconnectBtn" disabled>DISCONNECT</button>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">idle</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Log</h3>
+    <div id="log">Ready. Connect a device to begin.\n</div>
+  </div>
+</div>
+
+<script>
+  const logEl = document.getElementById('log');
+  function log(line) {
+    logEl.textContent += line + "\n";
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function showWarn(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+  }
+
+  if (!("serial" in navigator)) {
+    showWarn('browserWarn');
+  }
+
+  if (location.protocol === 'file:') {
+    document.getElementById('currentProtocol').textContent = location.href;
+    showWarn('fileProtocolWarn');
+    log('Blocked: page opened as a local file. See the notice above — Connect will not work until this page is served over http:// or https://.');
+  }
+
+  const terminal = {
+    clean() { logEl.textContent = ""; },
+    writeLine(data) { log(data); },
+    write(data) { log(data); },
+  };
+
+  let transport = null;
+  let esploader = null;
+  let connected = false;
+  let ESPLoader = null;
+  let Transport = null;
+  let libraryReady = false;
+
+  const connectBtn = document.getElementById('connectBtn');
+  const disconnectBtn = document.getElementById('disconnectBtn');
+  const flashBtn = document.getElementById('flashBtn');
+  const eraseBtn = document.getElementById('eraseBtn');
+  const statusPill = document.getElementById('statusPill');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+
+  // Load the flashing library up front so failures are visible immediately
+  // (rather than only surfacing when the user clicks Connect).
+  (async () => {
+    if (location.protocol === 'file:') return; // already warned above; import will fail the same way
+    try {
+      log('Loading esptool-js library...');
+      const mod = await import("https://unpkg.com/esptool-js/bundle.js");
+      ESPLoader = mod.ESPLoader;
+      Transport = mod.Transport;
+      libraryReady = true;
+      log('Library loaded. Ready to connect.');
+    } catch (e) {
+      log('Failed to load esptool-js: ' + e.message);
+      showWarn('libLoadWarn');
+    }
+  })();
+
+  // Per-chip bootloader offsets — these genuinely differ between ESP32
+  // variants (unlike the app and partition-table offsets, which are the
+  // same 0x10000 / 0x8000 for all of them under default ESP-IDF partition
+  // tables).
+  const BOOTLOADER_OFFSETS = {
+    'ESP32': '0x1000',
+    'ESP32-S2': '0x1000',
+    'ESP32-S3': '0x0',
+    'ESP32-C2': '0x0',
+    'ESP32-C3': '0x0',
+    'ESP32-C6': '0x0',
+    'ESP32-C61': '0x0',
+    'ESP32-H2': '0x0',
+    'ESP32-C5': '0x2000',
+    'ESP32-P4': '0x2000',
+    'ESP8266': '0x0',
+  };
+  const APP_OFFSET = '0x10000';
+  const PARTITION_TABLE_OFFSET = '0x8000';
+  let detectedChipName = null;
+
+  function bootloaderOffsetFor(chipName) {
+    if (!chipName) return '0x1000';
+    const key = Object.keys(BOOTLOADER_OFFSETS).find(k => chipName.toUpperCase().includes(k));
+    return key ? BOOTLOADER_OFFSETS[key] : '0x1000';
+  }
+
+  const quickFillRow = document.getElementById('quickFillRow');
+  const quickFillChip = document.getElementById('quickFillChip');
+  const offsetHint = document.getElementById('offsetHint');
+
+  document.querySelectorAll('.quick-fill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = btn.dataset.preset;
+      let address = '0x10000';
+      if (preset === 'bootloader') address = bootloaderOffsetFor(detectedChipName);
+      else if (preset === 'partitions') address = PARTITION_TABLE_OFFSET;
+      else if (preset === 'app') address = APP_OFFSET;
+      else if (preset === 'merged') address = '0x0';
+      addFileRow(address);
+    });
+  });
+
+  function setConnected(isConnected, chipName) {
+    connected = isConnected;
+    flashBtn.disabled = !isConnected;
+    eraseBtn.disabled = !isConnected;
+    disconnectBtn.disabled = !isConnected;
+    connectBtn.disabled = isConnected;
+    statusPill.textContent = isConnected ? ('connected: ' + (chipName || '')) : 'not connected';
+    statusPill.classList.toggle('connected', isConnected);
+  }
+
+  connectBtn.addEventListener('click', async () => {
+    if (location.protocol === 'file:') {
+      log('Cannot connect: this page must be served over http:// or https:// for Web Serial + module imports to work. See notice above.');
+      return;
+    }
+    if (!libraryReady) {
+      log('Library not loaded yet — check the notice above, or wait a moment and try again.');
+      return;
+    }
+    if (!("serial" in navigator)) {
+      log('Cannot connect: this browser does not support the Web Serial API.');
+      return;
+    }
+    try {
+      log('Requesting serial port — check for a browser device-selection popup (it can appear behind this window).');
+      const port = await navigator.serial.requestPort();
+      transport = new Transport(port, true);
+      esploader = new ESPLoader({
+        transport: transport,
+        baudrate: 115200,
+        terminal: terminal,
+      });
+      log('Connecting...');
+      const chipName = await esploader.main();
+      log('Connected to: ' + chipName);
+      detectedChipName = chipName;
+      quickFillChip.textContent = chipName;
+      quickFillRow.style.display = 'flex';
+      offsetHint.textContent = `Detected ${chipName} — bootloader offset for this chip is ${bootloaderOffsetFor(chipName)}.`;
+      setConnected(true, chipName);
+    } catch (e) {
+      if (e && e.name === 'NotFoundError') {
+        log('No port selected (you closed the picker, or no device showed up — check the USB-C cable is a data cable, not charge-only, and that the board is plugged in).');
+      } else {
+        log('Connection failed: ' + (e && e.message ? e.message : e));
+      }
+    }
+  });
+
+  disconnectBtn.addEventListener('click', async () => {
+    try {
+      if (esploader) await esploader.after('hard_reset');
+      if (transport) await transport.disconnect();
+    } catch (e) { /* ignore */ }
+    setConnected(false);
+    detectedChipName = null;
+    quickFillRow.style.display = 'none';
+    offsetHint.textContent = 'Connect a device to enable chip-specific quick-fill.';
+    log('Disconnected.');
+  });
+
+  // ---- firmware file rows ----
+  const fileRowsEl = document.getElementById('fileRows');
+  let rowCount = 0;
+
+  function addFileRow(defaultAddress) {
+    rowCount++;
+    const id = 'row' + rowCount;
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.dataset.rowId = id;
+    row.innerHTML = `
+      <input type="text" placeholder="0x10000" value="${defaultAddress || ''}" class="addr-input">
+      <input type="file" class="bin-input">
+      <button class="remove-btn">✕</button>
+    `;
+    row.querySelector('.remove-btn').addEventListener('click', () => row.remove());
+    fileRowsEl.appendChild(row);
+  }
+  addFileRow('0x10000');
+  document.getElementById('addRowBtn').addEventListener('click', () => addFileRow(''));
+
+  async function collectFileArray() {
+    const rows = [...fileRowsEl.querySelectorAll('.file-row')];
+    const fileArray = [];
+    for (const row of rows) {
+      const addrStr = row.querySelector('.addr-input').value.trim();
+      const fileInput = row.querySelector('.bin-input');
+      if (!fileInput.files.length) continue;
+      const file = fileInput.files[0];
+      const address = parseInt(addrStr, 16);
+      if (isNaN(address)) {
+        throw new Error('Invalid address for ' + file.name + ': "' + addrStr + '" (use hex, e.g. 0x10000)');
+      }
+      const data = new Uint8Array(await file.arrayBuffer());
+      fileArray.push({ data, address });
+    }
+    return fileArray;
+  }
+
+  flashBtn.addEventListener('click', async () => {
+    if (!connected || !esploader) return;
+    try {
+      const fileArray = await collectFileArray();
+      if (fileArray.length === 0) {
+        log('No firmware file selected.');
+        return;
+      }
+
+      flashBtn.disabled = true;
+      progressLabel.textContent = 'flashing...';
+
+      const flashOptions = {
+        fileArray: fileArray,
+        flashMode: document.getElementById('flashMode').value,
+        flashFreq: document.getElementById('flashFreq').value,
+        flashSize: document.getElementById('flashSize').value,
+        eraseAll: document.getElementById('eraseAllChk').checked,
+        compress: true,
+        reportProgress: (fileIndex, written, total) => {
+          const percent = total ? (written / total) * 100 : 0;
+          progressFill.style.width = percent.toFixed(1) + '%';
+          progressLabel.textContent = `file ${fileIndex + 1}/${fileArray.length} — ${percent.toFixed(1)}%`;
+        },
+      };
+
+      await esploader.writeFlash(flashOptions);
+      progressLabel.textContent = 'done — resetting device';
+      log('Flash complete.');
+      await esploader.after('hard_reset');
+      progressLabel.textContent = 'done';
+    } catch (e) {
+      log('Flash failed: ' + e.message);
+      progressLabel.textContent = 'failed — see log';
+    } finally {
+      flashBtn.disabled = !connected;
+    }
+  });
+
+  eraseBtn.addEventListener('click', async () => {
+    if (!connected || !esploader) return;
+    if (!confirm('Erase the entire flash on this device? This cannot be undone.')) return;
+    try {
+      eraseBtn.disabled = true;
+      progressLabel.textContent = 'erasing...';
+      await esploader.eraseFlash();
+      progressLabel.textContent = 'erase complete';
+      log('Flash erased.');
+    } catch (e) {
+      log('Erase failed: ' + e.message);
+      progressLabel.textContent = 'failed — see log';
+    } finally {
+      eraseBtn.disabled = !connected;
+    }
+  });
+</script>
+</body>
+</html>
