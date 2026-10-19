@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU Platform v2.0 - Download & Deploy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 2px solid #2196F3;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            color: #2196F3;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        }
+        
+        .tagline {
+            font-size: 1.2em;
+            color: #03DAC6;
+            margin-bottom: 5px;
+        }
+        
+        .version {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 8px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #2196F3;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.2);
+        }
+        
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .card h2 {
+            font-size: 1.5em;
+            color: #2196F3;
+            margin-bottom: 15px;
+        }
+        
+        .card p {
+            color: #aaa;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        
+        .download-btn:hover {
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            box-shadow: 0 5px 20px rgba(33, 150, 243, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .secondary-btn {
+            background: rgba(3, 218, 198, 0.2);
+            color: #03DAC6;
+            border: 1px solid #03DAC6;
+            margin-top: 10px;
+            margin-left: 5px;
+        }
+        
+        .secondary-btn:hover {
+            background: rgba(3, 218, 198, 0.3);
+        }
+        
+        .file-size {
+            color: #888;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        .specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .spec-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid #2196F3;
+        }
+        
+        .spec-label {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .spec-value {
+            color: #03DAC6;
+            font-weight: bold;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #FF9800;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #FF9800;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            color: #aaa;
+        }
+        
+        .instructions code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #76FF03;
+            font-family: monospace;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            color: #aaa;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .feature-list li:before {
+            content: "✓ ";
+            color: #03DAC6;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .tech-stack {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .tech-badge {
+            display: inline-block;
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin: 5px 5px 5px 0;
+            border: 1px solid rgba(33, 150, 243, 0.5);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 2px solid #2196F3;
+            margin-top: 40px;
+            color: #888;
+        }
+        
+        .footer a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            background: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid #F44336;
+            color: #F44336;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4CAF50;
+            color: #4CAF50;
+        }
+        
+        .warning {
+            background: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid #FF9800;
+            color: #FF9800;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .platform-comparison {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .platform-comparison th,
+        .platform-comparison td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .platform-comparison th {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            font-weight: bold;
+        }
+        
+        .platform-comparison tr:hover {
+            background: rgba(33, 150, 243, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🚀 ICU Platform v2.0</h1>
+            <p class="tagline">Unified Pentesting & SDR Command Center</p>
+            <p class="version">Build status: see the GitHub Actions run for this release</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid">
+            <!-- Raspberry Pi Image -->
+            <div class="card">
+                <div class="card-icon">🍓</div>
+                <h2>Raspberry Pi Image</h2>
+                <p>
+                    Complete turnkey deployment for Raspberry Pi 4/5.
+                    Full backend stack pre-configured with all services.
+                </p>
+                
+                <ul class="feature-list">
+                    <li>Node.js API + Express gateway</li>
+                    <li>Python FastAPI backend</li>
+                    <li>PostgreSQL + Redis</li>
+                    <li>RTL-SDR support</li>
+                    <li>Auto-start services</li>
+                </ul>
+                
+                <a href="RELEASE_URL" class="download-btn">📥 Download Image</a>
+                <div class="file-size">Size: shown on the release page</div>
+                
+                <div class="specs">
+                    <div class="spec-item">
+                        <div class="spec-label">OS</div>
+                        <div class="spec-value">Raspbian 64-bit</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Hardware</div>
+                        <div class="spec-value">Pi 4/5</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Services</div>
+                        <div class="spec-value">8 running</div>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h3>Installation</h3>
+                    <ol>
+                        <li>Download image file</li>
+                        <li>Write to microSD card: <code>sudo dd if=icu-pi.img of=/dev/sdX bs=4M</code></li>
+                        <li>Insert into Raspberry Pi</li>
+                        <li>Power on (wait ~2 minutes for first boot)</li>
+                        <li>Access: <code>http://raspberrypi.local:5000</code></li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- ESP32 Firmware -->
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h2>ESP32 Firmware</h2>
+                <p>
+                    SDR sensor module & I2S audio capture.
+                    WebSocket connection to ICU platform.
+                </p>
+                
+                <ul class="feature-list">
+                    <li>3-channel frequency tracking</li>
+                    <li>I2S audio/RF capture</li>
+                    <li>WiFi + WebSocket</li>
+                    <li>RSSI monitoring</li>
+                    <li>Temperature sensor</li>
+                </ul>
+                
+                <a href="RELEASE_URL" class="download-btn">📥 Download Firmware</a>
+                <div class="file-size">Size: shown on the release page</div>
+                
+                <div class="specs">
+                    <div class="spec-item">
+                        <div class="spec-label">Platform</div>
+                        <div class="spec-value">ESP32-WROOM-32</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Flash</div>
+                        <div class="spec-value">4 MB</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Baud</div>
+                        <div class="spec-value">115200</div>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h3>Installation</h3>
+                    <ol>
+                        <li>Install <code>esptool.py</code>: <code>pip install esptool</code></li>
+                        <li>Connect ESP32 to USB</li>
+                        <li>Flash: <code>esptool.py -p /dev/ttyUSB0 write_flash 0x1000 esp32-firmware.bin</code></li>
+                        <li>Configure WiFi in serial monitor</li>
+                        <li>Connect to ICU platform</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Android APK -->
+            <div class="card">
+                <div class="card-icon">📱</div>
+                <h2>Android APK</h2>
+                <p>
+                    Direct installation for Android phones & tablets.
+                    Install directly without Google Play.
+                </p>
+                
+                <ul class="feature-list">
+                    <li>Real-time sensor monitoring</li>
+                    <li>Remote device control</li>
+                    <li>WebSocket connection</li>
+                    <li>Material Design 3 UI</li>
+                    <li>Min Android 7.0+</li>
+                </ul>
+                
+                <a href="RELEASE_URL" class="download-btn">📥 Download APK</a>
+                <div class="file-size">Size: shown on the release page</div>
+                
+                <div class="specs">
+                    <div class="spec-item">
+                        <div class="spec-label">Min SDK</div>
+                        <div class="spec-value">24 (Android 7.0)</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Target SDK</div>
+                        <div class="spec-value">34 (Android 14)</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Size</div>
+                        <div class="spec-value">See release</div>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h3>Installation</h3>
+                    <ol>
+                        <li>Enable unknown sources: Settings > Security</li>
+                        <li>Transfer APK to phone via USB or download</li>
+                        <li>Open file manager and tap APK</li>
+                        <li>Tap "Install"</li>
+                        <li>Launch app and configure server IP/port</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Android AAB (Google Play) -->
+            <div class="card">
+                <div class="card-icon">🎯</div>
+                <h2>Android AAB</h2>
+                <p>
+                    App Bundle for Google Play Store distribution.
+                    Optimized delivery to all device configurations.
+                </p>
+                
+                <ul class="feature-list">
+                    <li>Google Play optimized</li>
+                    <li>Automatic device targeting</li>
+                    <li>Smaller download size</li>
+                    <li>Dynamic feature modules</li>
+                    <li>Analytics integration</li>
+                </ul>
+                
+                <a href="RELEASE_URL" class="download-btn">📥 Download AAB</a>
+                <div class="file-size">Size: shown on the release page</div>
+                
+                <div class="specs">
+                    <div class="spec-item">
+                        <div class="spec-label">Platform</div>
+                        <div class="spec-value">Google Play</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Format</div>
+                        <div class="spec-value">AAB</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Signing</div>
+                        <div class="spec-value">✓ Signed</div>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h3>Submission to Play Store</h3>
+                    <ol>
+                        <li>Create Google Play Developer account ($25 one-time)</li>
+                        <li>Sign in to Play Console</li>
+                        <li>Create new app project</li>
+                        <li>Upload AAB file to Production track</li>
+                        <li>Fill store listing (description, screenshots, category)</li>
+                        <li>Set content rating</li>
+                        <li>Submit for review (24-48 hours)</li>
+                        <li>Publish to Play Store</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Comparison -->
+        <section style="margin: 40px 0;">
+            <h2 style="color: #2196F3; margin-bottom: 20px;">Platform Comparison</h2>
+            <table class="platform-comparison">
+                <tr>
+                    <th>Feature</th>
+                    <th>Raspberry Pi</th>
+                    <th>ESP32</th>
+                    <th>Android APK</th>
+                    <th>Android AAB</th>
+                </tr>
+                <tr>
+                    <td>Installation</td>
+                    <td>Image to microSD</td>
+                    <td>Firmware flash</td>
+                    <td>Direct APK install</td>
+                    <td>Google Play Store</td>
+                </tr>
+                <tr>
+                    <td>Hardware Cost</td>
+                    <td>$35-55</td>
+                    <td>$10-15</td>
+                    <td>Any Android phone</td>
+                    <td>Any Android phone</td>
+                </tr>
+                <tr>
+                    <td>Services</td>
+                    <td>API + Backend + DB</td>
+                    <td>Sensor module</td>
+                    <td>Client only</td>
+                    <td>Client only</td>
+                </tr>
+                <tr>
+                    <td>RTL-SDR Support</td>
+                    <td>✓ Full</td>
+                    <td>Limited (I2S)</td>
+                    <td>-</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>Power Draw</td>
+                    <td>5W</td>
+                    <td>0.5W</td>
+                    <td>Phone battery</td>
+                    <td>Phone battery</td>
+                </tr>
+                <tr>
+                    <td>Updates</td>
+                    <td>Via SSH</td>
+                    <td>OTA firmware</td>
+                    <td>Manual APK</td>
+                    <td>Auto via Play Store</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Technology Stack -->
+        <section style="margin: 40px 0;">
+            <h2 style="color: #2196F3; margin-bottom: 20px;">Technology Stack</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div>
+                    <h3 style="color: #03DAC6; margin-bottom: 10px;">Backend (Raspberry Pi)</h3>
+                    <div>
+                        <span class="tech-badge">Node.js 18</span>
+                        <span class="tech-badge">Express.js</span>
+                        <span class="tech-badge">Python 3.9</span>
+                        <span class="tech-badge">FastAPI</span>
+                        <span class="tech-badge">PostgreSQL 15</span>
+                        <span class="tech-badge">Redis 7</span>
+                        <span class="tech-badge">Socket.IO</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #03DAC6; margin-bottom: 10px;">SDR & Sensors (ESP32)</h3>
+                    <div>
+                        <span class="tech-badge">Arduino IDE</span>
+                        <span class="tech-badge">WebSocket</span>
+                        <span class="tech-badge">I2S Audio</span>
+                        <span class="tech-badge">WiFi 802.11b/g/n</span>
+                        <span class="tech-badge">ADC 12-bit</span>
+                        <span class="tech-badge">RTL-SDR Ready</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #03DAC6; margin-bottom: 10px;">Mobile (Android)</h3>
+                    <div>
+                        <span class="tech-badge">Kotlin</span>
+                        <span class="tech-badge">Jetpack Compose</span>
+                        <span class="tech-badge">Material Design 3</span>
+                        <span class="tech-badge">WebSocket</span>
+                        <span class="tech-badge">Android 7.0+</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start Guides -->
+        <section style="margin: 40px 0;">
+            <h2 style="color: #2196F3; margin-bottom: 20px;">Quick Start Guides</h2>
+            
+            <div class="alert warning">
+                <strong>Before you install:</strong> binaries are produced by the CI workflow in .github/workflows/build.yml. Verify the checksum on the release page.
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                <div class="instructions" style="border-left-color: #2196F3;">
+                    <h3 style="color: #2196F3;">Beginner (Phone Only)</h3>
+                    <ol>
+                        <li>Download APK to Android phone</li>
+                        <li>Install via file manager</li>
+                        <li>Launch app</li>
+                        <li>Connect to ICU Pi</li>
+                        <li>Monitor sensors in real-time</li>
+                    </ol>
+                </div>
+                
+                <div class="instructions" style="border-left-color: #FF9800;">
+                    <h3 style="color: #FF9800;">Intermediate (Raspberry Pi)</h3>
+                    <ol>
+                        <li>Download the Pi image from the release page</li>
+                        <li>Write to microSD card</li>
+                        <li>Insert into Pi 4/5</li>
+                        <li>Power on (2 min boot)</li>
+                        <li>Access via <code>http://raspberrypi.local:5000</code></li>
+                    </ol>
+                </div>
+                
+                <div class="instructions" style="border-left-color: #4CAF50;">
+                    <h3 style="color: #4CAF50;">Advanced (Full Stack)</h3>
+                    <ol>
+                        <li>Deploy Raspberry Pi image</li>
+                        <li>Flash ESP32 with firmware</li>
+                        <li>Install Android APK</li>
+                        <li>Configure WiFi & APIs</li>
+                        <li>Integrate RTL-SDR device</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Support & Resources -->
+        <section style="margin: 40px 0;">
+            <h2 style="color: #2196F3; margin-bottom: 20px;">Documentation & Support</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div class="card">
+                    <h3>📚 Full Documentation</h3>
+                    <p>Complete API reference, architecture diagrams, and deployment guides</p>
+                    <a href="REPO_URL/blob/main/README.md" class="download-btn" style="width: 100%; text-align: center;">View Docs</a>
+                </div>
+                
+                <div class="card">
+                    <h3>🔧 Build Scripts</h3>
+                    <p>Automated build scripts for Raspberry Pi image and Android APK/AAB</p>
+                    <a href="REPO_URL/blob/main/pi-image/README.md" class="download-btn" style="width: 100%; text-align: center;">Download Scripts</a>
+                </div>
+                
+                <div class="card">
+                    <h3>💬 Community Support</h3>
+                    <p>GitHub issues, Discord community, and email support</p>
+                    <a href="REPO_URL/blob/main/COMPLETE_SUPPORT.md" class="download-btn" style="width: 100%; text-align: center;">Get Help</a>
+                </div>
+                
+                <div class="card">
+                    <h3>🛡️ Security</h3>
+                    <p>SSL/TLS certificates, signed APK, secure key storage</p>
+                    <a href="REPO_URL/blob/main/api/README.md" class="download-btn" style="width: 100%; text-align: center;">Security Docs</a>
+                </div>
+                
+                <div class="card">
+                    <h3>⚙️ Configuration</h3>
+                    <p>Environment variables, network setup, hardware integration</p>
+                    <a href="REPO_URL/blob/main/api/.env.example" class="download-btn" style="width: 100%; text-align: center;">Config Guide</a>
+                </div>
+                
+                <div class="card">
+                    <h3>🚀 Deployment</h3>
+                    <p>Production deployment, scaling, and monitoring</p>
+                    <a href="REPO_URL/blob/main/pi-image/README.md" class="download-btn" style="width: 100%; text-align: center;">Deploy Guide</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- License & Legal -->
+        <section style="background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 5px; margin: 40px 0;">
+            <h3 style="color: #2196F3; margin-bottom: 15px;">License & Legal</h3>
+            <p style="color: #aaa; margin-bottom: 10px;">
+                <strong>ICU Platform v2.0</strong> is proprietary software developed by ICU Tech LLC.
+            </p>
+            <p style="color: #aaa; margin-bottom: 10px;">
+                All components (Raspberry Pi image, ESP32 firmware, Android APK/AAB) are provided as-is 
+                for authorized users and authorized penetration testing operations only.
+            </p>
+            <p style="color: #aaa;">
+                For licensing, support, or custom deployments, contact: <strong>CONTACT_EMAIL</strong>
+            </p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>
+                <strong>ICU Tech LLC</strong> | Northern Colorado
+            </p>
+            <p style="margin-top: 10px;">
+                <a href="REPO_URL">Documentation</a> • 
+                <a href="REPO_URL">GitHub</a> • 
+                <a href="CONTACT_URL">Contact</a>
+            </p>
+            <p style="margin-top: 20px; color: #666;">
+                © ICU Tech LLC. All rights reserved.
+            </p>
+            <p style="margin-top: 10px; color: #888; font-size: 0.9em;">
+                For authorized penetration testing use only. Unauthorized access is illegal.
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
